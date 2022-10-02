@@ -50,6 +50,24 @@
     </div>
     
     <div id="graph"></div>
+
+    <div id="instructions">
+        <dl>
+            <dt>File Upload</dt>
+            <dd>- Click the "Choose File" button to add a .csv file.</dd>
+            <dd>- Verify that the text next to "Choose File" shows your file name, and not "no file chosen"</dd>
+            <dd>- Click the "Load Data" button to open your dataset.</dd>
+            <dt>Selecting Plot Criteria</dt>
+            <dd>- Once your data is loaded, the column names will be used as selection criteria</dd>
+            <dd>- Choose a column of your dataset to use as labels with the "Labels" selector. This column can be Textual or Numeric</dd>
+            <dd>- Choose attribute columns for X, Y, and Z. These are used for the scatterplot, and must be Numeric datatypes</dd>
+            <dd>- (Optional) Choose a column for color-scaling your scatterplot. This column must be a Numeric datatype</dd>
+            <dt>Plotting</dt>
+            <dd>- Click the "Generate Plot" button to create a 3D scatter plot</dd>
+            <dd>- If a new dataset is uploaded, or new selection criteria are chosen, click "Generate Plot" again to recreate the chart</dd>
+            <dd>- Plots are created using <a href="https://plotly.com/javascript/">Plotly</a></dd>
+        </dl>
+    </div>
 </body>
 
 
