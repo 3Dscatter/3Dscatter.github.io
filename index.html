@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<body>
+
+    <div id="Text">
+        <h1>3D Scatterplot Tool</h1>
+        <a href="https://github.com/3Dscatter/3Dscatter.github.io">Repository</a><br><br>
+    </div>
+
+    <div id="buttons">
+        <form id="myForm">
+            <input type="file" id="file-selector" accept=".csv, .txt"/><br>
+            <input type="submit" value="Load Data"/><br>
+        </form>
+        <button id="plot" onclick="generatePlot()">Generate Plot</button><br>
+        <br>
+    </div>
+
+    <div name="varSelectors">
+        <label for="attrLabels">Labels: </label>
+        <select name="attrLabels" id="attrLabels">
+            <option value="">Blank</option>
+        </select><br>
+
+        <label for="attrX">Attribute X: </label>
+        <select name="attrX" id="attrX">
+            <option value="">Blank</option>
+        </select><br>
+
+        <label for="attrY">Attribute Y: </label>
+
+        <select name="attrY" id="attrY">
+            <option value="">Blank</option>
+        </select><br>
+
+        <label for="attrZ">Attribute Z: </label>
+
+        <select name="attrZ" id="attrZ">
+            <option value="">Blank</option>
+        </select><br>
+
+        <label for="colorBy">Color-by: </label>
+
+        <select name="colorBy" id="colorBy">
+            <option value="None">None</option>
+        </select><br>
+    </div>
+    
+    <div id="graph"></div>
+</body>
+
+
+
+<script>
+
+    const fileSelector = document.getElementById('file-selector');
+    const myForm = document.getElementById("myForm");
+    const csvFile = document.getElementById("file-selector");
+    var myData = '';
+    var myAttrs = '';
+    var myX = '';
+    var myY = '';
+    var myZ = '';
+    var myC = '';
+    var myLabels = '';
+    var xVals = [];
+    var yVals = [];
+    var zVals = [];
+    var cVals = [];
+    var labelVars = [];
+
+    fileSelector.addEventListener('change', (event) => {
+        const fileList = event.target.files;
+        console.log(fileList);
+    });
+
+
+    function updateSelector() {
+        var optionSet = ["#attrLabels", "#attrX", "#attrY", "#attrZ", "#colorBy"]
+
+        for (let i=0; i<optionSet.length; i++) {
+            var outletOptions = document.querySelector(optionSet[i]);
+            Array.from(outletOptions).forEach((option) => {
+                outletOptions.removeChild(option)
+            })
+
+            if (optionSet[i] == "#colorBy") {
+                var opt = document.createElement('option')
+                opt.appendChild(document.createTextNode("None"));
+                opt.value = "None"
+                outletOptions.appendChild(opt)
+            }
+
+            myAttrs.map((optionData) => {
+                var opt = document.createElement('option')
+                opt.appendChild(document.createTextNode(optionData));
+                opt.value = optionData
+                outletOptions.appendChild(opt);
+            })
+        }
+
+    };
+
+
+    myForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const input = csvFile.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const text = e.target.result;
+            const data = d3.csvParse(text);
+            myData = data
+            myAttrs = Object.keys(myData[0])
+            updateSelector()
+        };
+
+        reader.readAsText(input);
+    });
+
+
+    function extractFeatures() {
+        tempL = document.getElementById('attrLabels');
+        myLabels = tempL.options[tempL.selectedIndex].text;
+        
+        tempX = document.getElementById('attrX');
+        myX = tempX.options[tempX.selectedIndex].text;
+
+        tempY = document.getElementById('attrY');
+        myY = tempY.options[tempY.selectedIndex].text;
+
+        tempZ = document.getElementById('attrZ');
+        myZ = tempZ.options[tempZ.selectedIndex].text;
+
+        tempC = document.getElementById('colorBy');
+        myC = tempC.options[tempC.selectedIndex].text;
+
+
+        labelVals = [];
+        for (var item of myData){
+            labelVals.push(item[myLabels])
+        }
+
+        xVals = [];
+        for (var item of myData){
+            xVals.push(item[myX])
+        }
+
+        yVals = [];
+        for (var item of myData){
+            yVals.push(item[myY])
+        }
+
+        zVals = [];
+        for (var item of myData){
+            zVals.push(item[myZ])
+        }
+
+        cVals = [];
+        if (myC != "None") {
+            for (var item of myData){
+                cVals.push(item[myC])
+            }
+        }
+
+        xVals = xVals.map(Number)
+        yVals = yVals.map(Number)
+        zVals = zVals.map(Number)
+        cVals = cVals.map(Number)
+    };
+
+
+
+    function generatePlot() {
+        extractFeatures()
+        if (typeof document.getElementById("graph").data !== 'undefined') {
+            while(document.getElementById("graph").data.length>0){
+                Plotly.deleteTraces("graph", [0]);
+            }
+        }
+        Plotly.plot('graph', {
+            data:[{
+            marker: {
+                showscale: true,
+                colorbar: {
+                    x: 0
+                },
+                color: cVals,
+                colorscale: 'Viridis'
+            },
+            mode: "markers",
+            text: labelVals,
+            x: xVals,
+            y: yVals,
+            z: zVals,
+            
+            hoverinfo: "text+x+y+z",
+            type: "scatter3d",
+            showlegend: true,
+            showscale: true
+        }],
+            layout: {
+                autosize: false,
+                height: 800,
+                width: 1200,
+                showlegend: true,
+                showscale: true,
+                scene: {
+                    xaxis:{title: myX},
+                    yaxis:{title: myY},
+                    zaxis:{title: myZ},
+                }
+            }
+        });
+    }
+
+</script>
